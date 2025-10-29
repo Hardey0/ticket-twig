@@ -1,187 +1,113 @@
 {% extends 'base.html.twig' %}
-{% block title %}Auth{% endblock %}
-
-{% set active = active|default('login') %}
+{% block title %}{{ is_login ? 'Login' : 'Signup' }} - TicketFlow{% endblock %}
 
 {% block styles %}
-<style>
-  .auth-container {
-    max-width: 900px;
-    margin: 60px auto;
-    display: flex;
-    background: white;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-  }
-  .auth-sidebar {
-    flex: 1;
-    background: linear-gradient(135deg, #007bff, #4b6cb7);
-    color: white;
-    padding: 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .auth-sidebar h2 { font-size: 2rem; margin-bottom: 1rem; }
-  .auth-sidebar p { opacity: 0.9; line-height: 1.6; }
-  .auth-form {
-    flex: 1;
-    padding: 3rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
-  .tabs {
-    display: flex;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #eee;
-  }
-  .tab {
-    flex: 1;
-    padding: 1rem;
-    text-align: center;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  .tab.active {
-    color: #007bff;
-    border-bottom: 3px solid #007bff;
-  }
-  .form-group {
-    margin-bottom: 1.2rem;
-  }
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    color: #374151;
-  }
-  input {
-    width: 100%;
-    padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border 0.3s;
-  }
-  input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
-  }
-  .btn-auth {
-    width: 100%;
-    padding: 14px;
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s;
-    margin-top: 1rem;
-  }
-  .btn-auth:hover {
-    background: #0056b3;
-    transform: translateY(-2px);
-  }
-  .error {
-    color: #e11d48;
-    font-size: 0.9rem;
-    margin-top: 0.5rem;
-  }
-  .form-switch {
-    text-align: center;
-    margin-top: 1.5rem;
-    color: #6b7280;
-  }
-  .form-switch a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 600;
-  }
-  .form-switch a:hover { text-decoration: underline; }
-
-  @media (max-width: 768px) {
-    .auth-container { flex-direction: column; }
-    .auth-sidebar { padding: 2rem; text-align: center; }
-  }
-</style>
+<link rel="stylesheet" href="/css/auth.css" />
 {% endblock %}
 
 {% block content %}
-<div class="auth-container">
-  <!-- Sidebar -->
-  <div class="auth-sidebar">
-    <h2>Welcome to TicketFlow</h2>
-    <p>Manage tickets efficiently with real-time tracking, secure access, and powerful analytics.</p>
-  </div>
+<div class="auth-page">
+  <section class="auth-hero">
+    <div class="container">
+      <div class="auth-card animated-fadeIn">
+        <h2 class="auth-title animated-slideDown">
+          {{ is_login ? 'Welcome Back' : 'Join Us Today' }}
+        </h2>
 
-  <!-- Form -->
-  <div class="auth-form">
-    <div class="tabs">
-      <div class="tab {% if active == 'login' %}active{% endif %}" onclick="showForm('login')">
-        Login
+        <div class="auth-toggle animated-slideUp delay-1">
+          <form method="GET" action="/auth" style="display:inline;">
+            <input type="hidden" name="mode" value="login">
+            <button type="submit" class="toggle-btn {{ is_login ? 'active' : '' }}">Login</button>
+          </form>
+          <form method="GET" action="/auth" style="display:inline;">
+            <input type="hidden" name="mode" value="signup">
+            <button type="submit" class="toggle-btn {{ not is_login ? 'active' : '' }}">Signup</button>
+          </form>
+        </div>
+
+        <form method="POST" action="/auth" class="animated-slideUp delay-2">
+          <input type="hidden" name="mode" value="{{ is_login ? 'login' : 'signup' }}">
+
+          <div class="form-group">
+            <label>Email</label>
+            <div class="input-wrapper">
+              <input type="email" name="email" value="{{ form.email|default('') }}" required placeholder="Enter your email" />
+              {% if form.email %}
+                <span class="clear-icon clear-visible" onclick="this.previousElementSibling.value=''; this.classList.remove('clear-visible');">X</span>
+              {% endif %}
+            </div>
+            {% if errors.email %}<span class="error-inline">{{ errors.email }}</span>{% endif %}
+          </div>
+
+          <div class="form-group">
+            <label>Password</label>
+            <div class="input-wrapper">
+              <input type="password" name="password" required placeholder="Enter your password" />
+              <span class="toggle-icon" onclick="togglePassword(this)" title="Toggle password">
+                <svg class="eye-open" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                <svg class="eye-closed" viewBox="0 0 24 24" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+              </span>
+            </div>
+            {% if errors.password %}<span class="error-inline">{{ errors.password }}</span>{% endif %}
+          </div>
+
+          {% if not is_login %}
+            <div class="form-group">
+              <label>Confirm Password</label>
+              <div class="input-wrapper">
+                <input type="password" name="confirm_password" required placeholder="Confirm your password" />
+                <span class="toggle-icon" onclick="togglePassword(this)" title="Toggle password">
+                  <svg class="eye-open" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <svg class="eye-closed" viewBox="0 0 24 24" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </span>
+              </div>
+              {% if errors.confirm_password %}<span class="error-inline">{{ errors.confirm_password }}</span>{% endif %}
+            </div>
+          {% endif %}
+
+          <button type="submit" class="submit-btn animated-bounce">
+            {{ is_login ? 'Login' : 'Signup' }}
+          </button>
+        </form>
+
+        <p class="auth-link animated-slideUp delay-3">
+          {{ is_login ? 'No account?' : 'Already have an account?' }}
+          <a href="/auth?mode={{ is_login ? 'signup' : 'login' }}" class="link-btn">
+            {{ is_login ? 'Signup' : 'Login' }}
+          </a>
+        </p>
+
+        <p class="return-link animated-slideUp delay-4">
+          Back to <a href="/">Home</a>
+        </p>
       </div>
-      <div class="tab {% if active == 'signup' %}active{% endif %}" onclick="showForm('signup')">
-        Sign Up
-      </div>
+
+      <div class="decorative-circle animated-rotate" style="top:20%;left:10%;width:250px;height:250px;"></div>
+      <div class="decorative-circle secondary-circle animated-rotate"></div>
     </div>
 
-    <!-- Login Form -->
-    <form method="POST" action="/auth/login" id="login-form" style="display: {% if active == 'login' %}block{% else %}none{% endif %};">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" name="email" value="user@example.com" required />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password" value="password" required />
-      </div>
-      {% if error and active == 'login' %}
-        <p class="error">{{ error }}</p>
-      {% endif %}
-      <button type="submit" class="btn-auth">Login</button>
-      <p class="form-switch">
-        Don't have an account? <a href="#" onclick="showForm('signup'); return false;">Sign up</a>
-      </p>
-    </form>
+    <svg class="wave-background" viewBox="0 0 1440 320" preserveAspectRatio="none">
+      <path fill="#0099ff" fill-opacity="0.8" d="M0,160L48,176C96,192,192,224,288,213.3C384,203,480,149,576,133.3C672,117,768,139,864,149.3C960,160,1056,160,1152,144C1248,128,1344,96,1392,80L1440,64L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+    </svg>
+  </section>
 
-    <!-- Signup Form -->
-    <form method="POST" action="/auth/signup" id="signup-form" style="display: {% if active == 'signup' %}block{% else %}none{% endif %};">
-      <div class="form-group">
-        <label>Full Name</label>
-        <input type="text" name="name" placeholder="John Doe" required />
-      </div>
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" name="email" placeholder="you@example.com" required />
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" name="password" placeholder="••••••••" required />
-      </div>
-      {% if error and active == 'signup' %}
-        <p class="error">{{ error }}</p>
-      {% endif %}
-      <button type="submit" class="btn-auth">Create Account</button>
-      <p class="form-switch">
-        Already have an account? <a href="#" onclick="showForm('login'); return false;">Login</a>
-      </p>
-    </form>
-  </div>
 </div>
 
 <script>
-function showForm(type) {
-  document.getElementById('login-form').style.display = type === 'login' ? 'block' : 'none';
-  document.getElementById('signup-form').style.display = type === 'signup' ? 'block' : 'none';
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.classList.toggle('active', tab.textContent.trim() === (type === 'login' ? 'Login' : 'Sign Up'));
-  });
+function togglePassword(btn) {
+  const input = btn.previousElementSibling;
+  const eyeOpen = btn.querySelector('.eye-open');
+  const eyeClosed = btn.querySelector('.eye-closed');
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    eyeOpen.style.display = 'none';
+    eyeClosed.style.display = 'block';
+  } else {
+    input.type = 'password';
+    eyeOpen.style.display = 'block';
+    eyeClosed.style.display = 'none';
+  }
 }
 </script>
 {% endblock %}
