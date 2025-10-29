@@ -1,0 +1,62 @@
+/* Global Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #e9ecef;
+  color: #212529;
+  line-height: 1.6;
+}
+
+/* Status Colors */
+.status-open {
+  color: #28a745;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: rgba(40, 167, 69, 0.1);
+  border-radius: 4px;
+}
+
+.status-in_progress {
+  color: #ffc107;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 4px;
+}
+
+.status-closed {
+  color: #6c757d;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: rgba(108, 117, 125, 0.1);
+  border-radius: 4px;
+}
+
+/* Links & Buttons */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+a:focus {
+  outline: 2px solid #007bff;
+}
+
+button,
+.btn {
+  cursor: pointer;
+  border: none;
+}

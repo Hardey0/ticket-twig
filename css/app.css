@@ -1,0 +1,59 @@
+/* === ALL YOUR CSS GOES HERE === */
+/* Start with shared design tokens */
+:root {
+  --max-width: 1440px;
+  --radius: 12px;
+  --shadow: 0 10px 25px rgba(0,0,0,0.08);
+  --transition: all 0.3s ease;
+  --color-open: #10b981;
+  --color-in-progress: #f59e0b;
+  --color-closed: #6b7280;
+  --color-primary: #3b82f6;
+  --color-bg: #f9fafb;
+  --color-surface: #ffffff;
+  --color-text: #1f2937;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Arial', sans-serif; background: var(--color-bg); color: var(--color-text); line-height: 1.6; }
+
+.container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  transition: var(--transition);
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-weight: bold;
+  text-decoration: none;
+  text-align: center;
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #4a90e2, #63b8ff);
+  color: white;
+}
+
+.btn.primary:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.4);
+}
+
+.status-open { color: var(--color-open); font-weight: bold; }
+.status-in_progress { color: var(--color-in-progress); font-weight: bold; }
+.status-closed { color: var(--color-closed); font-weight: bold; }
+
+/* Add your Landing CSS here later */

@@ -1,0 +1,187 @@
+{% extends 'base.html.twig' %}
+{% block title %}Auth{% endblock %}
+
+{% set active = active|default('login') %}
+
+{% block styles %}
+<style>
+  .auth-container {
+    max-width: 900px;
+    margin: 60px auto;
+    display: flex;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  }
+  .auth-sidebar {
+    flex: 1;
+    background: linear-gradient(135deg, #007bff, #4b6cb7);
+    color: white;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .auth-sidebar h2 { font-size: 2rem; margin-bottom: 1rem; }
+  .auth-sidebar p { opacity: 0.9; line-height: 1.6; }
+  .auth-form {
+    flex: 1;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .tabs {
+    display: flex;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #eee;
+  }
+  .tab {
+    flex: 1;
+    padding: 1rem;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .tab.active {
+    color: #007bff;
+    border-bottom: 3px solid #007bff;
+  }
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #374151;
+  }
+  input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border 0.3s;
+  }
+  input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+  }
+  .btn-auth {
+    width: 100%;
+    padding: 14px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 1rem;
+  }
+  .btn-auth:hover {
+    background: #0056b3;
+    transform: translateY(-2px);
+  }
+  .error {
+    color: #e11d48;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+  }
+  .form-switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    color: #6b7280;
+  }
+  .form-switch a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .form-switch a:hover { text-decoration: underline; }
+
+  @media (max-width: 768px) {
+    .auth-container { flex-direction: column; }
+    .auth-sidebar { padding: 2rem; text-align: center; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+  <!-- Sidebar -->
+  <div class="auth-sidebar">
+    <h2>Welcome to TicketFlow</h2>
+    <p>Manage tickets efficiently with real-time tracking, secure access, and powerful analytics.</p>
+  </div>
+
+  <!-- Form -->
+  <div class="auth-form">
+    <div class="tabs">
+      <div class="tab {% if active == 'login' %}active{% endif %}" onclick="showForm('login')">
+        Login
+      </div>
+      <div class="tab {% if active == 'signup' %}active{% endif %}" onclick="showForm('signup')">
+        Sign Up
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <form method="POST" action="/auth/login" id="login-form" style="display: {% if active == 'login' %}block{% else %}none{% endif %};">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" value="user@example.com" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" value="password" required />
+      </div>
+      {% if error and active == 'login' %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+      <button type="submit" class="btn-auth">Login</button>
+      <p class="form-switch">
+        Don't have an account? <a href="#" onclick="showForm('signup'); return false;">Sign up</a>
+      </p>
+    </form>
+
+    <!-- Signup Form -->
+    <form method="POST" action="/auth/signup" id="signup-form" style="display: {% if active == 'signup' %}block{% else %}none{% endif %};">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="name" placeholder="John Doe" required />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" placeholder="you@example.com" required />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" placeholder="••••••••" required />
+      </div>
+      {% if error and active == 'signup' %}
+        <p class="error">{{ error }}</p>
+      {% endif %}
+      <button type="submit" class="btn-auth">Create Account</button>
+      <p class="form-switch">
+        Already have an account? <a href="#" onclick="showForm('login'); return false;">Login</a>
+      </p>
+    </form>
+  </div>
+</div>
+
+<script>
+function showForm(type) {
+  document.getElementById('login-form').style.display = type === 'login' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = type === 'signup' ? 'block' : 'none';
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.classList.toggle('active', tab.textContent.trim() === (type === 'login' ? 'Login' : 'Sign Up'));
+  });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends 'base.html.twig' %}
+{% block title %}Home{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/css/landing.css" />
+{% endblock %}
+
+{% block content %}
+<div class="landing">
+
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">Ticket Management</h1>
+        <h2 class="hero-subtitle">
+          Empower your team with a seamless, secure, and feature-packed ticket management platform.
+          Track, manage, and resolve tickets efficiently in one centralized system designed for success.
+        </h2>
+        <div class="cta-buttons">
+          <a href="/auth" class="btn primary">Login</a>
+          <a href="/auth" class="btn secondary">Get Started</a>
+        </div>
+      </div>
+      <div class="decorative-circle hero-circle"></div>
+    </div>
+    <div class="wave-container">
+      <img src="/assets/wave.svg" class="hero-wave" alt="Wave" />
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2 class="section-title">Key Features</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Live Ticket Tracking</h3>
+          <p>Stay updated with <span class="status-open">open</span>, <span class="status-in_progress">in-progress</span>, and <span class="status-closed">closed</span> tickets in real time.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Robust Security</h3>
+          <p>Ensure data safety with encrypted authentication and secure access control.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Multi-Device Sync</h3>
+          <p>Access and manage tickets from any device with full synchronization.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Custom Workflows</h3>
+          <p>Tailor ticket workflows to fit your team's specific needs.</p>
+        </div>
+        <div class="feature-card">
+          <h3>Analytics Dashboard</h3>
+          <p>Gain insights with detailed ticket performance reports.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="about">
+    <div class="container">
+      <h2 class="section-title">Why Choose Us?</h2>
+      <div class="about-content">
+        <p>
+          Launched in 2023, our Ticket Management App is dedicated to simplifying ticket handling for
+          businesses worldwide. With a focus on user experience, security, and scalability, we've
+          supported over 10,000 teams in optimizing their workflows.
+        </p>
+        <div class="decorative-circle about-circle"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="team">
+    <div class="container">
+      <h2 class="section-title">Meet Our Team</h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <h3>Jane Doe</h3>
+          <p>CEO & Founder - Leading with vision and innovation.</p>
+        </div>
+        <div class="team-card">
+          <h3>John Smith</h3>
+          <p>Lead Developer - Crafting robust solutions daily.</p>
+        </div>
+        <div class="team-card">
+          <h3>Sarah Lee</h3>
+          <p>Customer Success - Ensuring your success is our priority.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials">
+    <div class="container">
+      <h2 class="section-title">What Our Users Say</h2>
+      <div class="testimonial-grid">
+        <div class="testimonial-card">
+          <p>"A game-changer for our support team—tickets are resolved faster than ever!"</p>
+          <h4>Emily Johnson, Team Lead</h4>
+        </div>
+        <div class="testimonial-card">
+          <p>"Love the mobile access; it keeps me productive on the move."</p>
+          <h4>Michael Lee, Developer</h4>
+        </div>
+        <div class="testimonial-card">
+          <p>"The analytics dashboard has transformed how we measure success."</p>
+          <h4>Robert Brown, Operations Manager</h4>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="container">
+      <h2 class="section-title">Start Managing Tickets Today!</h2>
+      <p>Empower your team with the best tools—sign up now.</p>
+      <a href="/auth" class="btn primary">Sign Up Now</a>
+    </div>
+  </section>
+
+</div>
+{% endblock %}
