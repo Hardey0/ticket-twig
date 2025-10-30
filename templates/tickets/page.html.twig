@@ -1,0 +1,234 @@
+{% extends 'base.html.twig' %}
+{% block title %}Tickets - Ticket Managemen{% endblock %}
+
+{% block styles %}
+<link rel="stylesheet" href="/css/tickets.css" />
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="ticket-management-page">
+  <header class="ticket-header animated-fadeIn">
+    <div class="container">
+      <div class="header-content">
+        <h1 class="ticket-title animated-slideDown">Ticket Management</h1>
+        <div class="header-actions">
+          <a href="/dashboard" class="back-btn animated-bounce">Back to Dashboard</a>
+          <button type="button" class="new-ticket-btn animated-bounce" onclick="setTab('create')">+ New Ticket</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="ticket-main">
+    <aside class="ticket-sidebar animated-slideUp delay-1">
+      <h3 class="sidebar-title">Menu</h3>
+      <ul class="sidebar-nav">
+        <li class="{{ tab == 'list' ? 'active' }}"><button type="button" onclick="setTab('list')">Ticket List</button></li>
+        <li class="{{ tab == 'create' ? 'active' }}"><button type="button" onclick="setTab('create')">Create Ticket</button></li>
+        <li class="{{ tab == 'summary' ? 'active' }}"><button type="button" onclick="setTab('summary')">Summary</button></li>
+      </ul>
+      <div class="filter-section">
+        <label>Filter By:</label>
+        <select onchange="filterTickets(this.value)">
+          <option value="all" {{ filter == 'all' ? 'selected' }}>All</option>
+          <option value="open" {{ filter == 'open' ? 'selected' }}>Open</option>
+          <option value="in_progress" {{ filter == 'in_progress' ? 'selected' }}>In Progress</option>
+          <option value="closed" {{ filter == 'closed' ? 'selected' }}>Closed</option>
+          <option value="high" {{ filter == 'high' ? 'selected' }}>High Priority</option>
+          <option value="medium" {{ filter == 'medium' ? 'selected' }}>Medium Priority</option>
+          <option value="low" {{ filter == 'low' ? 'selected' }}>Low Priority</option>
+        </select>
+      </div>
+    </aside>
+
+    <main class="ticket-content">
+      <section class="welcome-section animated-slideUp delay-2">
+        <h2 class="section-title">Welcome to Ticket Management</h2>
+        <p class="welcome-text">Create, edit, and track tickets with ease. Start by creating your first ticket!</p>
+      </section>
+
+      {% if tab == 'list' %}
+      <div class="ticket-table-section animated-slideUp delay-3">
+        <h2 class="section-title">Ticket List</h2>
+        <div class="tickets-table">
+          <table class="tickets-table-header">
+            <thead>
+              <tr>
+                <th>ID</th><th>Title</th><th>Status</th><th>Priority</th><th>Assigned To</th><th>Date</th><th>Actions</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="tickets-body">
+            {% if filtered_tickets|length > 0 %}
+              {% for ticket in filtered_tickets %}
+              <div class="ticket-row animated-slideLeft">
+                <span class="ticket-cell">{{ ticket.id }}</span>
+                <span class="ticket-cell title-cell">{{ ticket.title }}</span>
+                <span class="ticket-cell status-cell {{ ticket.status }}">{{ ticket.status|replace({'_': ' '})|title }}</span>
+                <span class="ticket-cell priority-cell {{ ticket.priority }}">{{ ticket.priority|title }}</span>
+                <span class="ticket-cell">{{ ticket.assigned_to|default('Unassigned') }}</span>
+                <span class="ticket-cell">{{ ticket.date }}</span>
+                <span class="ticket-cell actions-cell">
+                  <button class="edit-btn animated-bounce" onclick="editTicket({{ ticket.id }})">Edit</button>
+                  <form method="POST" action="/tickets/delete" style="display:inline;">
+                    <input type="hidden" name="id" value="{{ ticket.id }}">
+                    <button type="submit" class="delete-btn animated-bounce" onclick="return confirm('Delete this ticket?')">Delete</button>
+                  </form>
+                </span>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="ticket-row">
+                <span class="ticket-cell" style="grid-column:1/-1;text-align:center;color:#ccc;">
+                  No tickets yet. <a href="#" onclick="setTab('create')" style="color:#4a90e2;">Create one!</a>
+                </span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% if tab == 'create' %}
+      <div class="ticket-form-section animated-slideUp delay-3">
+        <h2 class="section-title">Create New Ticket</h2>
+        <form method="POST" action="/tickets" class="ticket-form">
+          <input type="hidden" name="action" value="create">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" name="title" placeholder="Enter ticket title" required />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <option value="open">Open</option>
+              <option value="in_progress">In Progress</option>
+              <option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select name="priority">
+              <option value="high">High</option>
+              <option value="medium" selected>Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assigned To</label>
+            <input type="text" name="assigned_to" placeholder="Enter assignee name" />
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" name="date" value="{{ 'now'|date('Y-m-d') }}" />
+          </div>
+          <button type="submit" class="submit-btn animated-bounce">Create Ticket</button>
+        </form>
+      </div>
+      {% endif %}
+
+      {% if tab == 'edit' and edit_ticket %}
+      <div class="ticket-form-section animated-slideUp delay-3">
+        <h2 class="section-title">Edit Ticket #{{ edit_ticket.id }}</h2>
+        <form method="POST" action="/tickets" class="ticket-form">
+          <input type="hidden" name="action" value="update">
+          <input type="hidden" name="id" value="{{ edit_ticket.id }}">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" name="title" value="{{ edit_ticket.title }}" required />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select name="status">
+              <option value="open" {{ edit_ticket.status == 'open' ? 'selected' }}>Open</option>
+              <option value="in_progress" {{ edit_ticket.status == 'in_progress' ? 'selected' }}>In Progress</option>
+              <option value="closed" {{ edit_ticket.status == 'closed' ? 'selected' }}>Closed</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select name="priority">
+              <option value="high" {{ edit_ticket.priority == 'high' ? 'selected' }}>High</option>
+              <option value="medium" {{ edit_ticket.priority == 'medium' ? 'selected' }}>Medium</option>
+              <option value="low" {{ edit_ticket.priority == 'low' ? 'selected' }}>Low</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Assigned To</label>
+            <input type="text" name="assigned_to" value="{{ edit_ticket.assigned_to }}" />
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" name="date" value="{{ edit_ticket.date }}" />
+          </div>
+          <button type="submit" class="submit-btn animated-bounce">Update Ticket</button>
+          <button type="button" class="cancel-btn animated-bounce" onclick="setTab('list')">Cancel</button>
+        </form>
+      </div>
+      {% endif %}
+
+      {% if tab == 'summary' %}
+      <div class="ticket-summary-section animated-slideUp delay-3">
+        <h2 class="section-title">Ticket Summary</h2>
+        <div class="summary-cards">
+          <div class="summary-card"><h4>Total</h4><p>{{ stats.total }}</p></div>
+          <div class="summary-card"><h4>Open</h4><p>{{ stats.open }}</p></div>
+          <div class="summary-card"><h4>In Progress</h4><p>{{ stats.in_progress }}</p></div>
+          <div class="summary-card"><h4>Closed</h4><p>{{ stats.closed }}</p></div>
+        </div>
+      </div>
+      {% endif %}
+    </main>
+  </div>
+
+ 
+</div>
+
+<script>
+lucide.createIcons();
+
+function setTab(tab) {
+  const url = new URL(window.location);
+  url.searchParams.set('tab', tab);
+  url.searchParams.delete('id');
+  window.location.href = url;
+}
+
+function filterTickets(filter) {
+  const url = new URL(window.location);
+  url.searchParams.set('filter', filter);
+  window.location.href = url;
+}
+
+function editTicket(id) {
+  const url = new URL(window.location);
+  url.searchParams.set('tab', 'edit');
+  url.searchParams.set('id', id);
+  window.location.href = url;
+}
+
+function showToast(msg, type = 'success') {
+  const toast = document.createElement('div');
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position:fixed;top:20px;left:50%;transform:translateX(-50%);
+    background:${type==='success'?'#28a745':'#dc3545'};color:#fff;padding:12px 28px;
+    border-radius:8px;z-index:10000;font-size:0.95rem;font-weight:600;
+    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+    animation:fadeIn 0.3s, fadeOut 0.3s 2.7s forwards;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+{% if success %}
+showToast('{{ success|escape }}', 'success');
+{% endif %}
+</script>
+
+<style>
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeOut { to { opacity: 0; transform: translateY(-10px); } }
+</style>
+{% endblock %}

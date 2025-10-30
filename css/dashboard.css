@@ -251,8 +251,22 @@
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px auto; /* centers horizontally */
+  border-radius: 50%;
+  background: #007bff;       /* blue circle */
+  display: flex;
+  align-items: center;
+  justify-content: center;   /* center icon inside circle */
+  font-size: 36px;           /* size of the icon */
+  color: #fff;
+  /* optional: one-time spin */
+  /* animation: spin 1.5s linear 1; */ 
+}
 
-.profile-avatar { font-size: 4rem; margin-bottom: 20px; animation: spin 2s linear infinite; }
+
 .profile-name { color: #fff; font-size: 1.8rem; margin-bottom: 10px; }
 .profile-email { color: #e0e0e0; margin-bottom: 20px; }
 
@@ -342,7 +356,7 @@
 @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes wave { 0% { transform: translateX(0); } 100% { transform: translateX(-1440px); } }
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-30px); } }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
 
 .animated-fadeIn { animation: fadeIn 1s ease-out; }
 .animated-slideUp { animation: slideUp 1s ease-out; }

@@ -1,170 +1,151 @@
 <?php
+
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
-// ---------------------
+// ==============================
 // LANDING PAGE
-// ---------------------
+// ==============================
 $app->get('/', function (Request $request, Response $response) {
     $twig = $this->get('view');
-    $html = $twig->render('landing.html.twig', [
-        'title' => 'Welcome to TicketFlow'
-    ]);
+    $html = $twig->render('landing.html.twig');
     $response->getBody()->write($html);
     return $response;
 });
 
-// ---------------------
-// AUTH PAGE (LOGIN + SIGNUP VIEW)
-// ---------------------
+// ==============================
+// AUTH PAGES
+// ==============================
 $app->get('/auth', function (Request $request, Response $response) {
     $twig = $this->get('view');
     $query = $request->getQueryParams();
-    $mode = $query['mode'] ?? 'login';
+    $active = $query['mode'] ?? 'login';
 
     $html = $twig->render('auth/page.html.twig', [
-        'is_login' => $mode === 'login',
-        'errors' => [],
-        'form' => []
+        'active' => $active
     ]);
     $response->getBody()->write($html);
     return $response;
 });
 
-// ---------------------
-// LOGIN SUBMIT
-// ---------------------
-$app->post('/auth/login', function (Request $request, Response $response) {
+$app->post('/auth', function (Request $request, Response $response) {
     $twig = $this->get('view');
     $data = $request->getParsedBody();
 
-    $email = trim($data['email'] ?? '');
-    $password = trim($data['password'] ?? '');
+    $mode = $data['mode'] ?? 'login';
+    $email = $data['email'] ?? '';
+    $password = $data['password'] ?? '';
+    $confirm = $data['confirm_password'] ?? '';
+
     $errors = [];
 
-    if (empty($email)) $errors['email'] = 'Email is required.';
-    if (empty($password)) $errors['password'] = 'Password is required.';
-
-    // Dummy credentials (replace with DB later)
-    if (empty($errors) && !($email === 'user@example.com' && $password === 'password')) {
-        $errors['email'] = 'Invalid email or password.';
+    // --- LOGIN ---
+    if ($mode === 'login') {
+        if ($email !== 'user@example.com' || $password !== 'password') {
+            $errors[] = 'Invalid email or password';
+        }
+    }
+    // --- SIGNUP ---
+    else {
+        if (!$email || !$password || $password !== $confirm) {
+            $errors[] = $password !== $confirm
+                ? 'Passwords do not match'
+                : 'Please fill all fields';
+        }
     }
 
-    if (!empty($errors)) {
-        $html = $twig->render('auth/page.html.twig', [
-            'is_login' => true,
-            'errors' => $errors,
-            'form' => $data
-        ]);
-        $response->getBody()->write($html);
-        return $response;
+    // --- SUCCESS ---
+    if (empty($errors)) {
+        $_SESSION['user'] = true;
+        return $response->withHeader('Location', '/dashboard')->withStatus(302);
     }
 
-    $_SESSION['user'] = ['email' => $email];
-    return $response->withHeader('Location', '/dashboard')->withStatus(302);
+    // --- FAILURE ---
+    $html = $twig->render('auth/page.html.twig', [
+        'active' => $mode,
+        'error'  => $errors[0]
+    ]);
+    $response->getBody()->write($html);
+    return $response;
 });
 
-// ---------------------
-// SIGNUP SUBMIT
-// ---------------------
-$app->post('/auth/signup', function (Request $request, Response $response) {
-    $twig = $this->get('view');
-    $data = $request->getParsedBody();
-
-    $email = trim($data['email'] ?? '');
-    $password = trim($data['password'] ?? '');
-    $confirm = trim($data['confirm_password'] ?? '');
-    $errors = [];
-
-    if (empty($email)) $errors['email'] = 'Email is required.';
-    if (empty($password)) $errors['password'] = 'Password is required.';
-    if ($password !== $confirm) $errors['confirm_password'] = 'Passwords do not match.';
-
-    if (!empty($errors)) {
-        $html = $twig->render('auth/page.html.twig', [
-            'is_login' => false,
-            'errors' => $errors,
-            'form' => $data
-        ]);
-        $response->getBody()->write($html);
-        return $response;
-    }
-
-    // In production, you'd save to a database here
-    $_SESSION['user'] = ['email' => $email];
-
-    return $response->withHeader('Location', '/dashboard')->withStatus(302);
-});
-
-// ---------------------
-// DASHBOARD
-// ---------------------
+// ==============================
+// DASHBOARD PAGE (Protected)
+// ==============================
 $app->get('/dashboard', function (Request $request, Response $response) {
     if (empty($_SESSION['user'])) {
         return $response->withHeader('Location', '/auth')->withStatus(302);
     }
 
     $twig = $this->get('view');
-    $tickets = json_decode(file_get_contents('tickets.json'), true) ?: [];
 
-    $stats = array_reduce($tickets, function ($acc, $t) {
-        $acc['total']++;
-        if ($t['status'] === 'open') $acc['open']++;
-        if ($t['status'] === 'in_progress') $acc['in_progress']++;
-        if ($t['status'] === 'closed') $acc['closed']++;
-        return $acc;
-    }, ['total' => 0, 'open' => 0, 'in_progress' => 0, 'closed' => 0]);
-
-    $recent = array_slice($tickets, -5);
-    $profile = json_decode(file_get_contents('profile.json'), true) ?: [];
+    // Example stats (optional, can be dynamic)
+    $stats = [
+        'total' => 0,
+        'open' => 0,
+        'in_progress' => 0,
+        'closed' => 0,
+    ];
 
     $html = $twig->render('dashboard/page.html.twig', [
-        'stats' => $stats,
-        'recent_tickets' => $recent,
-        'profile' => $profile,
-        'user' => $_SESSION['user']
+        'stats' => $stats
     ]);
     $response->getBody()->write($html);
     return $response;
 });
 
-// ---------------------
-// PROFILE UPDATE
-// ---------------------
-$app->post('/dashboard/profile', function (Request $request, Response $response) {
+// ==============================
+// LOGOUT
+// ==============================
+$app->map(['GET', 'POST'], '/logout', function (Request $request, Response $response) {
+    unset($_SESSION['user']);
+    return $response->withHeader('Location', '/')->withStatus(302);
+});
+
+// ==============================
+// TICKETS PAGE (Protected)
+// ==============================
+$app->map(['GET', 'POST'], '/tickets', function (Request $request, Response $response) {
     if (empty($_SESSION['user'])) {
         return $response->withHeader('Location', '/auth')->withStatus(302);
     }
 
-    $data = $request->getParsedBody();
-    file_put_contents('profile.json', json_encode([
-        'name' => $data['name'] ?? '',
-        'email' => $data['email'] ?? ''
-    ]));
+    $twig = $this->get('view');
 
-    return $response->withHeader('Location', '/dashboard')->withStatus(302);
-});
+    // Read query params for tab and filter
+    $query = $request->getQueryParams();
+    $tab = $query['tab'] ?? 'create';       // default to "create" tab when coming from dashboard
+    $filter = $query['filter'] ?? 'all';
+    $ticketId = $query['id'] ?? null;
 
-// ---------------------
-// LOGOUT
-// ---------------------
-$app->get('/logout', function (Request $request, Response $response) {
-    session_destroy();
-    return $response->withHeader('Location', '/')->withStatus(302);
-});
-
-// ---------------------
-// FALLBACK MIDDLEWARE (Avoid 405 Errors)
-// ---------------------
-$app->add(function ($request, $handler) {
-    $uri = $request->getUri()->getPath();
-    $method = $request->getMethod();
-
-    // Allow GET and POST for /auth
-    if ($uri === '/auth' && !in_array($method, ['GET', 'POST'])) {
-        $response = new \Slim\Psr7\Response();
-        return $response->withHeader('Location', '/auth')->withStatus(302);
+    // Optional: handle edit_ticket if ?tab=edit&id=...
+    $edit_ticket = null;
+    if ($tab === 'edit' && $ticketId) {
+        // Normally, fetch from DB. For now, empty object
+        $edit_ticket = [
+            'id' => $ticketId,
+            'title' => '',
+            'status' => 'open',
+            'priority' => 'medium',
+            'assigned_to' => '',
+            'date' => date('Y-m-d')
+        ];
     }
 
-    return $handler->handle($request);
+    // Pass minimal context to Twig to prevent errors
+    $html = $twig->render('tickets/page.html.twig', [
+        'tab' => $tab,
+        'filter' => $filter,
+        'edit_ticket' => $edit_ticket,
+        'filtered_tickets' => [], // empty by default
+        'stats' => [
+            'total' => 0,
+            'open' => 0,
+            'in_progress' => 0,
+            'closed' => 0
+        ]
+    ]);
+
+    $response->getBody()->write($html);
+    return $response;
 });
